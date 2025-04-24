@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="blue">#052A74</color>
+    <color name="yellow">#CDDC39</color>
+    <color name="green">#4CAF50</color>
+    <color name="darker_gray">#697478</color>
+    <color name="light_pink">#F6D6E1</color>
+    <color name="light_black">#8A4F65</color>
+    <color name="primaryColor">#673AB7</color> <!-- بنفسجي غامق -->
+    <color name="secondaryColor">#D1C4E9</color> <!-- بنفسجي فاتح -->
+    <color name="buttonColor">#673AB7</color> <!-- لون زر الإضافة -->
+
+</resources>

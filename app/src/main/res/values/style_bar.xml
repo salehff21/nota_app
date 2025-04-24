@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="ToolbarFontStyle" parent="Widget.AppCompat.Toolbar">
+        <item name="android:fontFamily">@font/cairo_medium</item>
+        <item name="android:textSize">18sp</item> <!-- يمكنك تغيير الحجم -->
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textAlignment">center</item><!-- يمكنك تغيير اللون -->
+    </style>
+
+</resources>
