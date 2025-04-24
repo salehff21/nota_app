@@ -2,29 +2,34 @@ package com.example.nota_app
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.media.RingtoneManager
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
-import kotlin.random.Random
+import com.example.nota_app.data.Task
+import com.example.nota_app.data.TaskDatabaseHelper
 
-class TaskAlarmReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context?, intent: Intent?) {
-        val title = intent?.getStringExtra("TASK_TITLE") ?: "مهمة قادمة"
-        val message = intent?.getStringExtra("TASK_MESSAGE") ?: "حان وقت تنفيذ المهمة!"
+class TaskAlarmReceiver(context1: Context) : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val taskId = intent?.getIntExtra("TASK_ID", -1) ?: -1
+            if (taskId == -1 || context == null) return
 
-        showNotification(context, title, message)
-    }
+            // جلب بيانات المهمة من قاعدة البيانات SQLite
+            val task = getTaskFromDatabase(context, taskId) ?: return
 
-    private fun showNotification(context: Context?, title: String, message: String) {
+            showNotification(context, task)
+        }
+
+    private fun showNotification(context: Context, task: Task) {
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = "task_reminder_channel"
-        val notificationId = kotlin.random.Random.nextInt() // تعديل هنا لاستخدام Random بشكل صحيح
+        val notificationId = task.id
 
-        val notificationManager =
-            context?.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        // إنشاء القناة للإشعارات في الأنظمة الجديدة (Android 8.0+)
+        // إنشاء القناة للإشعارات إذا كان إصدار الأندرويد 8 أو أعلى
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
@@ -34,13 +39,27 @@ class TaskAlarmReceiver : BroadcastReceiver() {
             notificationManager.createNotificationChannel(channel)
         }
 
+        // بناء الإشعار
+        val pendingIntent = null
         val builder = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle(title)
-            .setContentText(message)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)
+            .setSmallIcon(R.drawable.ic_notification) // تأكد من أن الأيقونة موجودة
+            .setContentTitle("📌 **مهامي اليومية**") // عنوان الإشعار
+            .setContentText("🔔 ${task.title} - ${task.priority}") // محتوى الإشعار
+            .setPriority(NotificationCompat.PRIORITY_HIGH) // تحديد أولوية الإشعار
+            .setAutoCancel(true) // إزالة الإشعار عند النقر عليه
+            .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)) // ضبط الصوت
+            .setContentIntent(pendingIntent) // فتح التطبيق عند الضغط على الإشعار
 
+        // عرض الإشعار
         notificationManager.notify(notificationId, builder.build())
+
+        Log.d("AlarmReceiver", "✅ تم عرض الإشعار بنجاح")
     }
-}
+
+
+    // **دالة لجلب المهمة من قاعدة البيانات SQLite**
+        private fun getTaskFromDatabase(context: Context, taskId: Int): Task? {
+            val dbHelper = TaskDatabaseHelper(context)
+            return dbHelper.getTaskById(taskId)
+        }
+    }

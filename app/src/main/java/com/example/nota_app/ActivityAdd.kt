@@ -1,5 +1,4 @@
 package com.example.nota_app
-
 import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.DatePickerDialog
@@ -7,8 +6,11 @@ import android.app.PendingIntent
 import android.app.TimePickerDialog
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import com.example.nota_app.data.Task
 import com.example.nota_app.data.TaskDatabaseHelper
 import java.util.*
@@ -28,7 +30,6 @@ class ActivityAdd : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add)
-
         // ربط المتغيرات بعناصر الواجهة
         titleInput = findViewById(R.id.add_title)
         taskTypeSpinner = findViewById(R.id.spinner_taskType)
@@ -37,11 +38,25 @@ class ActivityAdd : AppCompatActivity() {
         btnSave = findViewById(R.id.btn_save)
         dbHelper = TaskDatabaseHelper(this) // إنشاء كائن قاعدة البيانات SQLite
 
-        // إعداد قائمة أنواع المهام في Spinner
+         // إعداد قائمة أنواع المهام في Spinner
         val taskTypes = arrayOf("هام وعاجل", "هام وغير عاجل", "عاجل وغير هام", "غير هام وغير عاجل")
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, taskTypes)
+        // تخصيص ArrayAdapter لاستخدام الخط المخصص
+        val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, taskTypes) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getView(position, convertView, parent) as TextView
+                val typeface = ResourcesCompat.getFont(context, R.font.cairo_medium) // تحميل الخط المخصص
+                view.typeface = typeface
+                return view
+            }
+            override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getDropDownView(position, convertView, parent) as TextView
+                val typeface = ResourcesCompat.getFont(context, R.font.cairo_medium) // تحميل الخط المخصص
+                view.typeface = typeface
+                return view
+            }
+        }
+        // تعيين الـ adapter إلى الـ Spinner
         taskTypeSpinner.adapter = adapter
-
         // زر اختيار التاريخ
         btnPickDate.setOnClickListener {
             val calendar = Calendar.getInstance()
@@ -50,8 +65,6 @@ class ActivityAdd : AppCompatActivity() {
                 btnPickDate.text = selectedDate // عرض التاريخ المختار في الزر
             }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
         }
-
-
         btnPickTime.setOnClickListener {
             val calendar = Calendar.getInstance()
             val currentLanguage = Locale.getDefault().language // لغة النظام الحالي
@@ -69,15 +82,12 @@ class ActivityAdd : AppCompatActivity() {
 
                 // إضافة "صباحًا" أو "مساءً" حسب الوقت واللغة
                 selectedTime += " $period"
-
                 // عرض الوقت المختار في الزر
                 btnPickTime.text = selectedTime
-
                 // تحديث الساعة في الـ Calendar
                 calendar.set(Calendar.HOUR_OF_DAY, hour)
                 calendar.set(Calendar.MINUTE, minute)
                 calendar.set(Calendar.SECOND, 0)
-
                 // جدولة تنبيه موعد المهمة
                 scheduleTaskAlarm(calendar.timeInMillis, "موعد المهمة", "حان وقت تنفيذ المهمة!")
             }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), false).show()
@@ -85,6 +95,7 @@ class ActivityAdd : AppCompatActivity() {
 
         // زر الحفظ لإضافة المهمة
         btnSave.setOnClickListener {
+            print( "ٍStart Add task ❌")
             val title = titleInput.text.toString().trim()
             val type = taskTypeSpinner.selectedItem?.toString() ?: ""
 
@@ -97,27 +108,25 @@ class ActivityAdd : AppCompatActivity() {
             val task = Task(
                 title = title,
                 priority = type,
-                date = selectedDate,
+                date =  selectedDate,
                 time = selectedTime,
                 status = false
             )
-
             // إدراج المهمة في قاعدة بيانات SQLite
             val taskId = dbHelper.insertTask(task)
 
             if (taskId != -1L) {
+                val mainActivity= MainActivity()
                 Toast.makeText(this, "تم حفظ المهمة ✅", Toast.LENGTH_SHORT).show()
-
                 // جدولة التنبيهات بناءً على نوع المهمة
                 scheduleTaskNotifications(task)
-
+                mainActivity.loadTasks()
                 finish() // العودة إلى الصفحة السابقة بعد الحفظ
             } else {
                 Toast.makeText(this, "فشل في حفظ المهمة ❌", Toast.LENGTH_SHORT).show()
             }
         }
     }
-
     // دالة لجدولة التنبيهات بناءً على نوع المهمة
     private fun scheduleTaskNotifications(task: Task) {
         when (task.priority) {
@@ -129,35 +138,42 @@ class ActivityAdd : AppCompatActivity() {
         scheduleMonthlyReport()
         scheduleYearlyReport()
     }
-
     // جدولة تنبيه المهمة
     @SuppressLint("ScheduleExactAlarm")
-    private fun scheduleTaskAlarm(timeInMillis: Long, title: String, message: String) {
+    private fun scheduleTaskAlarm(timeInMillis: Long, taskName: String, message: String) {
         val alarmManager = getSystemService(AlarmManager::class.java)
-        val intent = Intent(this, AlarmReceiver::class.java).apply {
-            putExtra("title", title)
-            putExtra("message", message)
-        }
-        val pendingIntent = PendingIntent.getBroadcast(
-            this, timeInMillis.toInt(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent)
-    }
 
+        // إعداد الـ Intent لإرسال البيانات إلى الـ BroadcastReceiver
+        val intent = Intent(this, AlarmReceiver::class.java).apply {
+            putExtra("TASK_TITLE", taskName)
+            putExtra("TASK_MESSAGE", message)
+        }
+
+        // إنشاء PendingIntent باستخدام الوقت المحدد
+        val pendingIntent = PendingIntent.getBroadcast(
+            this,
+            timeInMillis.toInt(), // تعيين معرّف فريد للتنبيه
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        // تحديد النوع الصحيح من التنبيهات
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent)
+
+        // إظهار رسالة للمستخدم عند ضبط التنبيه بنجاح
+        Toast.makeText(this, "تم ضبط التنبيه بنجاح!", Toast.LENGTH_SHORT).show()
+    }
     // جدولة تقارير أسبوعية
     private fun scheduleWeeklyReport() {
         val calendar = Calendar.getInstance()
         calendar.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY) // تحديد يوم التقرير
         scheduleTaskAlarm(calendar.timeInMillis, "التقرير الأسبوعي", "إليك ملخص مهامك لهذا الأسبوع!")
     }
-
     // جدولة تقارير شهرية
     private fun scheduleMonthlyReport() {
         val calendar = Calendar.getInstance()
         calendar.set(Calendar.DAY_OF_MONTH, 30) // آخر يوم في الشهر
         scheduleTaskAlarm(calendar.timeInMillis, "التقرير الشهري", "إليك تقرير مهامك لهذا الشهر!")
     }
-
     // جدولة تقارير سنوية
     private fun scheduleYearlyReport() {
         val calendar = Calendar.getInstance()
@@ -166,3 +182,5 @@ class ActivityAdd : AppCompatActivity() {
         scheduleTaskAlarm(calendar.timeInMillis, "التقرير السنوي", "إليك ملخص إنجازاتك خلال العام!")
     }
 }
+
+

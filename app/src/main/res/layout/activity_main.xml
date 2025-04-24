@@ -7,7 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity"
     android:background="@color/white">
-
     <!-- شاشة الترحيب -->
     <LinearLayout
         android:id="@+id/splash_screen"
@@ -23,7 +22,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="90dp"
             android:fontFamily="@font/cairo_medium"
-            android:text="مهــامي اليومية"
+            android:text="إدارة مهــامي "
             android:textAlignment="center"
             android:textColor="@color/blue"
             android:textSize="14pt"
@@ -38,7 +37,6 @@
             app:srcCompat="@drawable/event_management" />
 
     </LinearLayout>
-
     <!-- المحتوى الرئيسي (يكون مخفي عند بدء التطبيق) -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/main_content"
@@ -50,6 +48,7 @@
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/main_toolbar"
             android:layout_width="0dp"
+
             android:layout_height="?attr/actionBarSize"
             android:background="@color/primaryColor"
             app:layout_constraintTop_toTopOf="parent"
@@ -63,32 +62,39 @@
         <ListView
             android:id="@+id/list_items"
             android:layout_width="388dp"
+
             android:layout_height="600dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="0dp"
             android:layout_marginRight="2dp"
             android:background="@color/white"
             android:divider="@android:color/darker_gray"
             android:dividerHeight="1dp"
-            app:layout_constraintBottom_toTopOf="@id/btn_add"
+            app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.478"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/main_toolbar" />
 
-        <!-- زر إضافة مهمة -->
-        <Button
-            android:id="@+id/btn_add"
+        <!-- Bottom Navigation -->
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigation"
             android:layout_width="0dp"
-            android:layout_height="60dp"
-            android:layout_margin="16dp"
-            android:background="@drawable/dotted_border"
-            android:text="إضافة المهمة"
-            android:textSize="20sp"
-            android:textStyle="bold"
+            android:layout_height="55dp"
+            android:background="@drawable/bottom_background"
+            android:elevation="2dp"
+            app:itemIconSize="30dp"
+
+            app:itemIconTint="@drawable/item_selector"
+            app:itemRippleColor="@android:color/transparent"
+            app:labelVisibilityMode="unlabeled"
+            app:menu="@menu/bottom_menu"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/list_items" />
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="0dp"
+            android:layout_marginStart="30dp"
+            android:layout_marginEnd="30dp"
+            android:layout_marginBottom="5dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

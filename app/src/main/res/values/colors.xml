@@ -4,12 +4,22 @@
     <color name="white">#FFFFFF</color>
     <color name="blue">#052A74</color>
     <color name="yellow">#CDDC39</color>
-    <color name="green">#4CAF50</color>
+    <color name="green_01">#4CAF50</color>
     <color name="darker_gray">#697478</color>
     <color name="light_pink">#F6D6E1</color>
     <color name="light_black">#8A4F65</color>
     <color name="primaryColor">#673AB7</color> <!-- بنفسجي غامق -->
-    <color name="secondaryColor">#D1C4E9</color> <!-- بنفسجي فاتح -->
+    <color name="secondaryColor">#7FB47878</color> <!-- بنفسجي فاتح -->
     <color name="buttonColor">#673AB7</color> <!-- لون زر الإضافة -->
+    <color name="SkyBlue">#5DADE2</color>
+    <color name="SoftGreen">#58D68D</color>
+    <color name="DarkPurple">#6A0DAD</color>
+    <color name="DarkGray">#C4628899</color>
+    <color name="red">#ABD70909</color>
+    <color name="orange">#A5FFA500</color>
+    <color name="green">#8B008000</color>
+    <color name="gray">#808080</color>
+
+
 
 </resources>

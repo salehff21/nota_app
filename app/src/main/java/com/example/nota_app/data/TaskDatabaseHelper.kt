@@ -1,19 +1,23 @@
 package com.example.nota_app.data
 
+import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
+import android.database.DatabaseUtils
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import android.content.ContentValues
-import android.database.Cursor
-
+import android.util.Log
+import java.text.SimpleDateFormat
+import java.util.Locale
 private const val DATABASE_NAME = "task_database.db"
 private const val DATABASE_VERSION = 1
 private const val TABLE_NAME = "tasks"
 
-// كلاس مساعد لإدارة قاعدة البيانات
+
 class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
-    // عند إنشاء قاعدة البيانات لأول مرة
+
     override fun onCreate(db: SQLiteDatabase) {
         // استعلام لإنشاء الجدول
         val createTableQuery = """
@@ -27,55 +31,74 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
                 status INTEGER DEFAULT 0
             )
         """.trimIndent()
-        // تنفيذ الاستعلام
+
         db.execSQL(createTableQuery)
     }
 
-    // عند ترقية قاعدة البيانات (تغيير النسخة)
+
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        // حذف الجدول القديم في حالة الترقية
+
         db.execSQL("DROP TABLE IF EXISTS $TABLE_NAME")
-        // إعادة إنشاء الجدول
+
         onCreate(db)
     }
 
-    // دالة لإدخال مهمة جديدة في قاعدة البيانات
+    fun formatDate(inputDate: String): String {
+
+        val inputFormat = SimpleDateFormat("yyyy-M-d", Locale.ENGLISH)
+
+        val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
+
+
+        val date = inputFormat.parse(inputDate)
+        return outputFormat.format(date!!)
+    }
+
+
+
     fun insertTask(task: Task): Long {
         val db = writableDatabase
         val values = ContentValues().apply {
-            put("title", task.title)       // عنوان المهمة
-            put("priority", task.priority) // الأولوية
-            put("date", task.date)         // التاريخ
-            put("time", task.time)         // الوقت
-            put("isCompleted", if (task.isCompleted) 1 else 0) // حالة الإنجاز
-            put("status", if (task.status) 1 else 0) // الحالة (نشط أو غير نشط)
+            put("title", task.title)
+            put("priority", task.priority)
+            put("date",  formatDate(task.date))
+            put("time", task.time)
+            put("isCompleted", if (task.isCompleted) 1 else 0)
+            put("status", if (task.status) 1 else 0)
         }
-        // إدخال المهمة وإرجاع المعرف الخاص بالمهمة
+
         return db.insert(TABLE_NAME, null, values)
     }
+    fun getTaskStatistics(): Pair<Int, Int> {
+        val db = this.readableDatabase
 
-    // دالة لتحديث مهمة موجودة
+        val completedQuery = "SELECT COUNT(*) FROM tasks  WHERE  isCompleted= 1"
+        val pendingQuery = " SELECT COUNT(*) FROM tasks  WHERE  isCompleted= 0"
+
+        val completedCount = DatabaseUtils.longForQuery(db, completedQuery, null).toInt()
+        val pendingCount = DatabaseUtils.longForQuery(db, pendingQuery, null).toInt()
+        return Pair(completedCount, pendingCount)
+    }
+
     fun updateTask(task: Task): Int {
         val db = writableDatabase
         val values = ContentValues().apply {
-            put("title", task.title)       // عنوان المهمة
-            put("priority", task.priority) // الأولوية
-            put("date", task.date)         // التاريخ
-            put("time", task.time)         // الوقت
-            put("isCompleted", if (task.isCompleted) 1 else 0) // حالة الإنجاز
-            put("status", if (task.status) 1 else 0) // الحالة (نشط أو غير نشط)
+            put("title", task.title)
+            put("priority", task.priority)
+            put("date", formatDate(task.date))
+            put("time", task.time)
+            put("isCompleted", if (task.isCompleted) 1 else 0)
+            put("status", if (task.status) 1 else 0)
         }
-        // تحديث المهمة باستخدام المعرف الخاص بالمهمة
+
         return db.update(TABLE_NAME, values, "id = ?", arrayOf(task.id.toString()))
     }
 
-    // دالة لحذف مهمة باستخدام المعرف
-    fun deleteTask(taskId: Int): Int {
+    fun deleteTask(taskId: String?): Int {
         val db = writableDatabase
         // حذف المهمة باستخدام المعرف
         return db.delete(TABLE_NAME, "id = ?", arrayOf(taskId.toString()))
     }
-
     // دالة لاسترجاع جميع المهام من قاعدة البيانات
     fun getAllTasks(): List<Task> {
         val db = readableDatabase
@@ -83,20 +106,107 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         val cursor: Cursor = db.rawQuery("SELECT * FROM $TABLE_NAME ORDER BY date ASC, time ASC", null)
         val tasks = mutableListOf<Task>()
 
-        // قراءة البيانات من الكورسور وتحويلها إلى قائمة من المهام
         while (cursor.moveToNext()) {
             val task = Task(
-                id = cursor.getInt(0),           // المعرف
-                title = cursor.getString(1),      // العنوان
-                priority = cursor.getString(2),   // الأولوية
-                date = cursor.getString(3),       // التاريخ
-                time = cursor.getString(4),       // الوقت
-                isCompleted = cursor.getInt(5) == 1, // حالة الإنجاز
-                status = cursor.getInt(6) == 1    // الحالة
+                id = cursor.getInt(0),
+                title = cursor.getString(1),
+                priority = cursor.getString(2),
+                date = cursor.getString(3),
+                time = cursor.getString(4),
+                isCompleted = cursor.getInt(5) == 1,
+                status = cursor.getInt(6) == 1
             )
             tasks.add(task)
         }
-        cursor.close()  // إغلاق الكورسور بعد استخدامه
+
+        cursor.close()
         return tasks
     }
+
+
+    fun getAllTasksCompleted(): List<Task> {
+        val tasks = mutableListOf<Task>()
+        val db = readableDatabase
+        var cursor: Cursor? = null
+        try {
+            cursor = db.rawQuery("SELECT * FROM $TABLE_NAME WHERE isCompleted = 1 ORDER BY date ASC, time ASC", null)
+
+
+            while (cursor.moveToNext()) {
+                val task = Task(
+                    id = cursor.getInt(0),
+                    title = cursor.getString(1),
+                    priority = cursor.getString(2),
+                    date = cursor.getString(3),
+                    time = cursor.getString(4),
+                    isCompleted = cursor.getInt(5) == 1,
+                    status = cursor.getInt(6) == 1
+                )
+                tasks.add(task)
+            }
+        } catch (e: Exception) {
+
+        } finally {
+            cursor?.close()
+
+        }
+
+        return tasks
+    }
+
+    @SuppressLint("Range")
+    fun getTaskById(taskId: Int): Task? {
+        val db = readableDatabase
+        val query = "SELECT title, priority FROM tasks WHERE id = ?"
+        val cursor = db.rawQuery(query, arrayOf(taskId.toString()))
+
+
+        return if (cursor != null && cursor.moveToFirst()) {
+            val title = cursor.getString(cursor.getColumnIndex("title"))
+            val priority = cursor.getString(cursor.getColumnIndex("priority"))
+            cursor.close()
+
+
+            Task(
+                taskId, title, priority,
+                date = TODO(),
+                time = TODO(),
+                isCompleted = TODO(),
+                status = TODO()
+            )
+        } else {
+            cursor.close()
+            null
+        }
+    }
+
+    @SuppressLint("Range")
+    fun getTasksByDateRange(days: Int): List<Task> {
+        val tasks = mutableListOf<Task>()
+        val db = readableDatabase
+
+        val query="SELECT title, priority, date FROM tasks WHERE date(date) BETWEEN date('now', '-$days days') AND date('now')ORDER BY date DESC"
+        val cursor = db.rawQuery(query, null)
+
+        while (cursor.moveToNext()) {
+            val title = cursor.getString(0)
+            val priority = cursor.getString(1)
+            val date: String = cursor.getString(2) ?: ""
+            Log.d("DEBUG:getTasksByDateRange", "تم تحميل المهام لنوع التقرير: $days")
+            tasks.add(Task(
+                title = title,
+                priority = priority,
+                date = date,
+                time = "",
+                isCompleted =true,
+                status = false
+            ))
+        }
+
+        cursor.close()
+        db.close()
+        return tasks
+    }
+
+
 }

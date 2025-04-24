@@ -1,6 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/task_report"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:layout_marginTop="5dp"
+    android:background="@drawable/background_editor">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <TextView
+        android:id="@+id/tvTaskTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="عنوان المهمة"
+        android:fontFamily="@font/cairo_medium"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:paddingBottom="5dp" />
+    <LinearLayout
+        android:id="@+id/Report_tasks"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <!-- عنوان المهمة -->
+    <!-- وصف المهمة -->
+        <TextView
+            android:id="@+id/tvTaskType"
+            android:layout_width="179dp"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:fontFamily="@font/cairo_medium"
+            android:text="نوع المهمة"
+            android:textColor="@android:color/black"
+            android:textSize="14sp" />
+
+    <!-- تاريخ المهمة -->
+        <TextView
+            android:id="@+id/tvTaskDate"
+            android:layout_width="210dp"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:layout_marginLeft="2dp"
+            android:fontFamily="@font/cairo_medium"
+            android:paddingTop="5dp"
+            android:text="تاريخ المهمة"
+            android:textColor="@android:color/holo_blue_dark"
+            android:textSize="12sp" />
+    </LinearLayout>
+</LinearLayout>
