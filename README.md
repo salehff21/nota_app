@@ -1,5 +1,4 @@
 
-```markdown
 <h1 align="center">📝 nota_app — Task Management (Android, Kotlin + SQLite)</h1>
 
 <p align="center">
@@ -14,7 +13,8 @@ Create, edit, complete, and delete tasks with optional description and due date.
   <img alt="License" src="https://img.shields.io/badge/License-MIT-lightgrey">
 </p>
 
----
+
+```markdown
 
 ## ✨ Features
 - Add tasks with **title**, optional **description**, and **due date**  
