@@ -114,5 +114,4 @@ This project is licensed under the **MIT License** — see `LICENSE` for details
 ## 🤝 Contributing
 Pull requests are welcome. For major changes, open an issue first to discuss what you’d like to change.
 ```
-
-إن أردت، أعطيك نسختين: بواجهة عربية وبواجهات صور جاهزة.
+ 
