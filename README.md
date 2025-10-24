@@ -56,7 +56,7 @@ app/
 │  └─ strings.xml
 └─ mipmap-*/ app icons
 
-```
+ 
 
 ---
 
